@@ -1,0 +1,108 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "SentinelFlow Governance API",
+    "description": "API for auditing Power Apps definitions against security and governance rules.",
+    "version": "1.0.0"
+  },
+  "host": "https://sentinelflow-c2yg3mivytpm2-func.azurewebsites.net",
+  "basePath": "/api",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/audit": {
+      "post": {
+        "operationId": "AuditApp",
+        "summary": "Audits an App Definition",
+        "description": "Analyzes the provided app definition JSON for security risks and governance violations.",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuditRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Audit",
+            "schema": {
+              "$ref": "#/definitions/AuditResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "AuditRequest": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string",
+          "description": "Name of the Power App"
+        },
+        "app_definition_json": {
+          "type": "string",
+          "description": "The raw code or JSON of the app"
+        }
+      },
+      "required": [
+        "app_name",
+        "app_definition_json"
+      ]
+    },
+    "AuditResponse": {
+      "type": "object",
+      "properties": {
+        "app_name": {
+          "type": "string"
+        },
+        "governance_score": {
+          "type": "integer",
+          "description": "Score from 0 to 100"
+        },
+        "is_compliant": {
+          "type": "boolean"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          }
+        }
+      }
+    },
+    "Finding": {
+      "type": "object",
+      "properties": {
+        "rule_id": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "Critical",
+            "Warning",
+            "Info"
+          ]
+        },
+        "message": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

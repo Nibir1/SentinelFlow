@@ -1,14 +1,24 @@
-// File-Level Comment:
-// Azure Bicep Template for SentinelFlow.
-// Provisions a Serverless Python Function App and dependent resources.
-// Deploy with: az deployment group create --resource-group <RG_NAME> --template-file main.bicep
+// ============================================================================
+// SentinelFlow — Azure Bicep Template
+// Deploys a Python 3.11 Linux Function App with Functions v4
+// ============================================================================
 
 param location string = resourceGroup().location
-param appNamePrefix string = 'sentinelflow-${uniqueString(resourceGroup().id)}'
 
-// 1. Storage Account (Required for Function App state)
+// Generate a unique suffix per resource group
+var uniqueSuffix = uniqueString(resourceGroup().id)
+
+// Resource names
+var storageAccountName = take('stsentinel${uniqueSuffix}', 24) // max 24 chars, no hyphens
+var appPlanName = 'sentinelflow-${uniqueSuffix}-plan'
+var appInsightsName = 'sentinelflow-${uniqueSuffix}-ai'
+var functionAppName = 'sentinelflow-${uniqueSuffix}-func'
+
+// ============================================================================
+// 1. Storage Account
+// ============================================================================
 resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
-  name: '${appNamePrefix}sa'
+  name: storageAccountName
   location: location
   sku: {
     name: 'Standard_LRS'
@@ -16,9 +26,11 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   kind: 'StorageV2'
 }
 
-// 2. Application Insights (Monitoring & Logging)
+// ============================================================================
+// 2. Application Insights
+// ============================================================================
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: '${appNamePrefix}-ai'
+  name: appInsightsName
   location: location
   kind: 'web'
   properties: {
@@ -26,28 +38,32 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-// 3. App Service Plan (Consumption / Serverless)
+// ============================================================================
+// 3. App Service Plan (Linux Consumption / Serverless)
+// ============================================================================
 resource hostingPlan 'Microsoft.Web/serverfarms@2021-03-01' = {
-  name: '${appNamePrefix}-plan'
+  name: appPlanName
   location: location
   sku: {
-    name: 'Y1' // The consumption plan SKU
-    tier: 'Dynamic'
+    name: 'Y1'      // Consumption tier
+    tier: 'Dynamic' // Serverless
   }
   properties: {
-    reserved: true // Required for Linux
+    reserved: true  // Required for Linux
   }
 }
 
-// 4. Function App (Linux / Python)
+// ============================================================================
+// 4. Function App (Linux, Python 3.11, Functions v4)
+// ============================================================================
 resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
-  name: '${appNamePrefix}-func'
+  name: functionAppName
   location: location
   kind: 'functionapp,linux'
   properties: {
     serverFarmId: hostingPlan.id
     siteConfig: {
-      linuxFxVersion: 'PYTHON|3.11' // Explicitly setting Python version
+      linuxFxVersion: 'PYTHON|3.11'
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -63,9 +79,25 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
         }
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true' // Enables remote build
+          value: 'true'
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'  // Sets runtime version to v4
+          value: '~4'
         }
       ]
     }
   }
 }
+
+// ============================================================================
+// Outputs
+// ============================================================================
+output functionAppName string = functionApp.name
+output storageAccount string = storageAccount.name
+output appInsightsName string = appInsights.name
+output appPlanName string = hostingPlan.name

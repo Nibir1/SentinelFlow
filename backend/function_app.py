@@ -12,7 +12,8 @@ from governance_engine import AuditRequest, GovernanceAuditor
 # It handles HTTP parsing, validation, and serialization, delegating logic to 'governance_engine'.
 
 # Initialize the Function App
-app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+# app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
+app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="audit", methods=["POST"])
 def audit_app(req: func.HttpRequest) -> func.HttpResponse:
