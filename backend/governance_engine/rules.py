@@ -21,12 +21,15 @@ class GovernanceRule:
 # In a real enterprise scenario, these might be loaded from a database or config file.
 RULES_LIBRARY = [
     # Security Rule: Detect hardcoded client secrets or passwords
+    # UPDATED LOGIC:
+    # 1. Matches keywords (secret, password, apikey, token)
+    # 2. Allows for suffixes (e.g., 'varSecretKey') using [a-zA-Z0-9_]*
+    # 3. Matches assignment operators: ':' (JSON), '=' (Code), or ',' (Power Apps Set function)
     GovernanceRule(
         rule_id="SEC-001",
         severity=Severity.CRITICAL,
         description="Potential hardcoded secret or password detected.",
-        # Matches patterns like 'Secret = "xyz"' or 'varPassword = "123"'
-        pattern=re.compile(r'(?i)(secret|password|apikey|token)\s*[:=]\s*["\'][^"\']+["\']')
+        pattern=re.compile(r'(?i)(secret|password|apikey|token)[a-zA-Z0-9_]*\s*[:=>,]\s*["\'][^"\']+["\']')
     ),
     
     # GDPR/Privacy Rule: Detect explicit use of social security numbers or sensitive PII labels

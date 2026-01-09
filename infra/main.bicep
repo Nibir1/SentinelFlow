@@ -1,6 +1,7 @@
 // ============================================================================
 // SentinelFlow — Azure Bicep Template
 // Deploys a Python 3.11 Linux Function App with Functions v4
+// UPDATES: Enforced Storage naming & Added CORS support for Power Apps
 // ============================================================================
 
 param location string = resourceGroup().location
@@ -64,6 +65,15 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
     serverFarmId: hostingPlan.id
     siteConfig: {
       linuxFxVersion: 'PYTHON|3.11'
+      
+      // NEW: CORS Configuration
+      // Allows Power Apps (and any other client) to call the API
+      cors: {
+        allowedOrigins: [
+          '*'
+        ]
+      }
+      
       appSettings: [
         {
           name: 'AzureWebJobsStorage'
@@ -86,7 +96,7 @@ resource functionApp 'Microsoft.Web/sites@2021-03-01' = {
           value: '1'
         }
         {
-          name: 'FUNCTIONS_EXTENSION_VERSION'  // Sets runtime version to v4
+          name: 'FUNCTIONS_EXTENSION_VERSION'
           value: '~4'
         }
       ]

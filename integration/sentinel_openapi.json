@@ -5,7 +5,7 @@
     "description": "API for auditing Power Apps definitions against security and governance rules.",
     "version": "1.0.0"
   },
-  "host": "https://sentinelflow-c2yg3mivytpm2-func.azurewebsites.net",
+  "host": "sentinelflow-c2yg3mivytpm2-func.azurewebsites.net",
   "basePath": "/api",
   "schemes": [
     "https"
