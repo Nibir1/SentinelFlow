@@ -1,5 +1,9 @@
 # SentinelFlow: Automated Power Platform Governance Engine
 
+[![SentinelFlow Demo](https://img.youtube.com/vi/QD1j5oWxqQI/maxresdefault.jpg)](https://youtu.be/QD1j5oWxqQI)
+
+> 📺 **[Watch the Architectural Walkthrough](https://youtu.be/QD1j5oWxqQI)** featuring core functionalities.
+
 ![Azure](https://img.shields.io/badge/azure-%230072C6.svg?style=for-the-badge&logo=microsoftazure&logoColor=white)
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
 ![Power Apps](https://img.shields.io/badge/Power%20Apps-742774?style=for-the-badge&logo=powerapps&logoColor=white)
