@@ -133,25 +133,58 @@ Open `integration/sentinel_openapi.json` and replace the `"host"` value with you
 
 ## Build the UI
 
-Create a Blank Canvas App and add the **SentinelFlowConnector** as a data source. Add the following controls:
+We treat the UI as code, using global variables for theming and relative formulas for responsive layout.
 
-#### **A. Input Section**
-
-* **Control:** Text Input
-* **Name:** `txtCodeInput`
-* **Mode:** `Multiline`
-* **HintText:** `"Paste Power App Source Code (JSON) here..."`
-
-#### **B. The "Audit" Button**
-
-* **Control:** Button
-* **Text:** `"Audit App"`
-* **OnSelect Property:**
+#### **A. Global Theming (App.OnStart)**
+Define a corporate color palette and design system variables to ensure consistency.
 ```powerfx
-// 1. Show loading state
+// App.OnStart Property
+Set(varTheme, {
+    Primary: ColorValue("#0072C6"),     // Metso Blue
+    Background: ColorValue("#F3F4F6"),  // Light Gray (Tailwind gray-100)
+    Surface: ColorValue("#FFFFFF"),     // White
+    Critical: ColorValue("#DC2626"),    // Red
+    Safe: ColorValue("#16A34A")         // Green
+});
+
+```
+
+#### **B. Screen Layout (Responsive)**
+
+1. **Main Screen:** Set `Fill` to `varTheme.Background`.
+2. **Header:**
+   * **Control:** Label
+   * **Width:** `Parent.Width` (Full Span)
+   * **Fill:** `varTheme.Primary`
+   * **Text:** "SentinelFlow Governance Engine"
+
+3. **Input Area (Left Split):**
+   * **Control:** Text Input (`txtCodeInput`)
+   * **Mode:** `Multiline`
+   * **X/Y:** Anchored to left (`40`, `120`)
+   * **Width:** `(Parent.Width / 2) - 60`
+   * **Height:** `Parent.Height - 160`
+
+4. **Results Area (Right Split):**
+   * **Control:** HTML Text (Background Card)
+   * **HtmlText:**
+```html
+<div style='background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 98%; height: 98%;'></div>
+
+```
+
+* **Logic:** Place the Gallery and Score Labels on top of this card for an elevated UI effect.
+
+
+#### **C. Core Logic (Audit Button)**
+
+The button triggers the Azure Function and stores the result in a context variable.
+
+```powerfx
+// OnSelect Property
 UpdateContext({ locIsLoading: true });
 
-// 2. Call Azure Function (Pass plain strings, not a record)
+// Call Azure Function (Pass arguments as raw strings)
 UpdateContext({ 
     locScanResult: SentinelFlowGovernanceAPI.AuditApp(
         "UserScan", 
@@ -159,36 +192,24 @@ UpdateContext({
     ) 
 });
 
-// 3. Hide loading
 UpdateContext({ locIsLoading: false });
 
 ```
 
-#### **C. The Score Display**
+#### **D. Dynamic Feedback**
 
-* **Control:** Label
-* **Text Property:**
+* **Score Label:**
 ```powerfx
 "Governance Score: " & locScanResult.governance_score & "/100"
 
 ```
 
-* **Color Property:** (Dynamic Red/Green logic)
+
+* **Color Logic:**
 ```powerfx
-If(locScanResult.governance_score < 70, Color.Red, Color.Green)
+If(locScanResult.governance_score < 70, varTheme.Critical, varTheme.Safe)
 
 ```
-
-#### **D. The Findings Gallery**
-
-* **Control:** Vertical Gallery
-* **Items Property:** `locScanResult.findings`
-* **Inside the Gallery:**
-* **Title Label:** `ThisItem.rule_id & " | " & ThisItem.severity`
-* *Color:* `If(ThisItem.severity = "Critical", Color.Red, Color.Black)`
-
-
-* **Subtitle Label:** `ThisItem.message`
 
 ---
 
